@@ -10,7 +10,7 @@
 #define MAKE_PAD(size) STR_MERGE(_pad, __COUNTER__)[size]
 #define DEFINE_MEMBER_N(type, name, offset) struct {unsigned char MAKE_PAD(offset); type name;}
 
-bool bJump = false, bAmmo = false, bRecoil = false, bShotSpped = false, bSpeedHack = false;
+bool bJump = false, bAmmo = false, bRecoil = false, bShotSpped = false, bSpeedHack = false, bTriggerbot = false;
 
 
 struct vec3
@@ -35,6 +35,7 @@ void printOnOff()
     std::cout << std::setw(40) << std::left << "[NUMPAD5] Set Teleport Position" << recoderPostion.x << " " << recoderPostion.y << " " << recoderPostion.z << std::endl;
     std::cout << std::setw(40) << std::left << "[NUMPAD6] Teleport to set Position" << std::endl;
     std::cout << std::setw(40) << std::left << "[NUMPAD7] Speed Hack" << isOpen(bSpeedHack) << std::endl;
+    std::cout << std::setw(40) << std::left << "[NUMPAD8] Triggerbot" << isOpen(bTriggerbot) << std::endl;
     std::cout << std::setw(40) << std::left << "[END] Exit" << std::right << std::endl;
 }
 
@@ -55,6 +56,7 @@ public:
         DEFINE_MEMBER_N(byte, right, 0x8d);
         DEFINE_MEMBER_N(byte, up, 0x8e);
         DEFINE_MEMBER_N(byte, down, 0x8f);
+        DEFINE_MEMBER_N(byte, attack, 0x224);
         DEFINE_MEMBER_N(int, team, 0x32c);
     };
 };
@@ -64,11 +66,10 @@ struct EntList
     playerent* ents[32];
 };
 
-int* numOfPlayers = (int*)(0x50f500);
-playerent* localPlayer = *(playerent**)0x50F4F4;
-EntList* entList = *(EntList**)0x50F4F8;
+typedef playerent* (__cdecl* tGetCrossHairEnt)();
 
-float speed_val = localPlayer->maxSpeed * 0.2;
+tGetCrossHairEnt GetCrossHairEnt = nullptr;
+
 
 
 DWORD WINAPI HackThread(HMODULE hmodule)
@@ -78,6 +79,13 @@ DWORD WINAPI HackThread(HMODULE hmodule)
     freopen_s(&f, "CONOUT$", "w", stdout);
 
     printOnOff();
+
+    int* numOfPlayers = (int*)(0x50f500);
+    playerent* localPlayer = *(playerent**)0x50F4F4;
+    EntList* entList = *(EntList**)0x50F4F8;
+    GetCrossHairEnt = (tGetCrossHairEnt)0x4607C0;
+
+    float speed_val = localPlayer->maxSpeed * 0.2;
 
     while (1)
     {
@@ -159,6 +167,13 @@ DWORD WINAPI HackThread(HMODULE hmodule)
 
         }
 
+        if (GetAsyncKeyState(VK_NUMPAD8) & 1)
+        {
+            bTriggerbot = !bTriggerbot;
+            printOnOff();
+
+        }
+
         if (bSpeedHack)
         {
             if (!(localPlayer->up && localPlayer->down))
@@ -175,6 +190,23 @@ DWORD WINAPI HackThread(HMODULE hmodule)
                     localPlayer->leftright = speed_val;
                 if (localPlayer->right)
                     localPlayer->leftright = -speed_val;
+            }
+        }
+
+        if (bTriggerbot)
+        {
+            playerent* CrossHairEnt = GetCrossHairEnt();
+
+            if (CrossHairEnt)
+            {
+                if (localPlayer->team != CrossHairEnt->team)
+                {
+                    localPlayer->attack = 1;
+                }
+            }
+            else
+            {
+                localPlayer->attack = 0;
             }
         }
 
