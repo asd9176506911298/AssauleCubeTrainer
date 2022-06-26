@@ -10,7 +10,7 @@
 #define MAKE_PAD(size) STR_MERGE(_pad, __COUNTER__)[size]
 #define DEFINE_MEMBER_N(type, name, offset) struct {unsigned char MAKE_PAD(offset); type name;}
 
-bool bJump = false, bAmmo = false, bRecoil = false, bShotSpped = false, bSpeedHack = false, bTriggerbot = false;
+bool bJump = false, bAmmo = false, bRecoil = false, bShotSpped = false, bSpeedHack = false, bTriggerbot = false, bFly = false;
 
 
 struct vec3
@@ -25,17 +25,29 @@ std::string isOpen(bool status)
 
 vec3 recoderPostion = { 0 };
 
+void printText(std::string string, bool status)
+{
+    std::cout << std::setw(40) << std::left << string << isOpen(status) << std::endl;
+}
+
+void printText(std::string string)
+{
+    std::cout << std::setw(40) << std::left << string << std::endl;
+}
+
+
 void printOnOff()
 {
     system("cls");
-    std::cout << std::setw(40) << std::left << "[NUMPAD1] High Jump" << isOpen(bJump) << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD2] Unlimited Ammo" << isOpen(bAmmo) << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD3] Gun Recoil" << isOpen(bRecoil) << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD4] Shoot Fast" << isOpen(bShotSpped) << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD5] Set Teleport Position" << recoderPostion.x << " " << recoderPostion.y << " " << recoderPostion.z << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD6] Teleport to set Position" << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD7] Speed Hack" << isOpen(bSpeedHack) << std::endl;
-    std::cout << std::setw(40) << std::left << "[NUMPAD8] Triggerbot" << isOpen(bTriggerbot) << std::endl;
+    printText("[NUMPAD1] High Jump", bJump);
+    printText("[NUMPAD2] Unlimited Ammo", bAmmo);
+    printText("[NUMPAD3] Gun Recoil", bRecoil);
+    printText("[NUMPAD4] Shoot Fast", bShotSpped);
+    printText("[NUMPAD5] Set Teleport Position");
+    printText("[NUMPAD6] Teleport to set Position");
+    printText("[NUMPAD7] Speed Hack", bSpeedHack);
+    printText("[NUMPAD8] Triggerbot", bTriggerbot);
+    printText("[NUMPAD9] Fly", bFly);
     std::cout << std::setw(40) << std::left << "[END] Exit" << std::right << std::endl;
 }
 
@@ -52,12 +64,14 @@ public:
         DEFINE_MEMBER_N(float, maxSpeed, 0x50);
         DEFINE_MEMBER_N(char, frontback, 0x80);
         DEFINE_MEMBER_N(char, leftright, 0x81);
+        DEFINE_MEMBER_N(byte, invisible, 0x82);
         DEFINE_MEMBER_N(byte, left, 0x8c);
         DEFINE_MEMBER_N(byte, right, 0x8d);
         DEFINE_MEMBER_N(byte, up, 0x8e);
         DEFINE_MEMBER_N(byte, down, 0x8f);
         DEFINE_MEMBER_N(byte, attack, 0x224);
         DEFINE_MEMBER_N(int, team, 0x32c);
+        DEFINE_MEMBER_N(int, spectator, 0x338);
     };
 };
 
@@ -172,6 +186,22 @@ DWORD WINAPI HackThread(HMODULE hmodule)
             bTriggerbot = !bTriggerbot;
             printOnOff();
 
+        }
+
+        if (GetAsyncKeyState(VK_NUMPAD9) & 1)
+        {
+            bFly = !bFly;
+            printOnOff();
+            if (bFly)
+            {
+                localPlayer->invisible = 11;
+                localPlayer->spectator = 5;
+            }
+            else
+            {
+                localPlayer->invisible = 0;
+                localPlayer->spectator = 0;
+            }
         }
 
         if (bSpeedHack)
