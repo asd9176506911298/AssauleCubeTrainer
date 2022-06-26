@@ -10,6 +10,6 @@ Just for practice game hack
 * Shoot Fast - shoot fast
 * Set Teleport Position - record current position
 * Teleport to set Position - teleport to record position
-* Speed Hack - move fast server will be kick
+* Speed Hack - move fast mulitplayer will be kick
 * Triggerbot - crosshair have enemy auto shoot
 * Flyhack - fly as spectator
