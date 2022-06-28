@@ -13,3 +13,4 @@ Just for practice game hack
 * Speed Hack - move fast mulitplayer will be kick
 * Triggerbot - crosshair have enemy auto shoot
 * Flyhack - fly as spectator
+* Auto Jump -  touch the floor auto jump

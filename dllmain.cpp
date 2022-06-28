@@ -39,6 +39,7 @@ void printText(std::string string)
 void printOnOff()
 {
     system("cls");
+    printText("[SPACE] Auto Jump");
     printText("[NUMPAD1] High Jump", bJump);
     printText("[NUMPAD2] Unlimited Ammo", bAmmo);
     printText("[NUMPAD3] Gun Recoil", bRecoil);
@@ -62,6 +63,7 @@ public:
         DEFINE_MEMBER_N(int, health, 0xf8);
         DEFINE_MEMBER_N(vec3, position, 0x34);
         DEFINE_MEMBER_N(float, maxSpeed, 0x50);
+        DEFINE_MEMBER_N(byte, jump, 0x6b);
         DEFINE_MEMBER_N(char, frontback, 0x80);
         DEFINE_MEMBER_N(char, leftright, 0x81);
         DEFINE_MEMBER_N(byte, invisible, 0x82);
@@ -204,6 +206,11 @@ DWORD WINAPI HackThread(HMODULE hmodule)
             }
         }
 
+        if (GetAsyncKeyState(VK_SPACE))
+        {
+            localPlayer->jump = 1;
+        }
+
         if (bSpeedHack)
         {
             if (!(localPlayer->up && localPlayer->down))
@@ -239,6 +246,8 @@ DWORD WINAPI HackThread(HMODULE hmodule)
                 localPlayer->attack = 0;
             }
         }
+
+        
 
         Sleep(10);
     }
